@@ -37,6 +37,14 @@ public class Exercise1 {
             c++;
         }
         System.out.println(r);
+        System.out.println();
+        int rr = 0;
+        int cc = 1;
+        while(cc<=100){
+            rr = rr + cc;
+            c++;
+        }
+        System.out.println(rr);
     }
 }
 
