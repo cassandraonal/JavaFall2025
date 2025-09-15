@@ -29,6 +29,14 @@ public class Exercise1 {
               System.out.println(i4+" ");
               i4+=2; // i4 = i4 + 2;
         }
+        System.out.println();
+        int r = 0;
+        int c = 1;
+        while(c<=10){
+            r = r + c;
+            c++;
+        }
+        System.out.println(r);
     }
 }
 
