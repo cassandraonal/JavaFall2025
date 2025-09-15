@@ -11,7 +11,7 @@ public class Ex4 {
         System.out.println();
         //Ex 3: Print all the even number from 1 to 100
         for(int i = 2; i<=100; i+=2){
-            System.out.print(i+" ")
+            System.out.print(i+" ");
         }
 
     }
