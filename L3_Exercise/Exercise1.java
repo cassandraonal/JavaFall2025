@@ -38,13 +38,13 @@ public class Exercise1 {
         }
         System.out.println(r);
         System.out.println();
-        int rr = 0;
-        int cc = 1;
-        while(cc<=100){
-            rr = rr + cc;
-            c++;
+        int r1 = 0;
+        int i5 = 1;
+        while(i5<=100){
+            r1 = r1 + i5;
+            i5++;
         }
-        System.out.println(rr);
+        System.out.println(r1);
     }
 }
 
