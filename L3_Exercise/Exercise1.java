@@ -63,6 +63,8 @@ public class Exercise1 {
             i7--; // decreasing for going from 10 down to 1.
         }
         System.out.println(r3);
+        System.out.println();
+        
     }
 }
 
