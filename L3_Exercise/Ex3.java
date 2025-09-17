@@ -35,10 +35,17 @@ public class Ex3 {
         System.out.println(r1);
         //Exercise 5: calculate sum of even number from 1 to 100
         //2 + 4 + 6 + 8...+ 100 = 2550
-        int r2 = 2;
+        int r2 = 0;
         for(int i=2;i<=100;i+=2){
             r2 = r2 + i;
         }
-        System.out.println();
+        System.out.println(r2);
+        //Exercise 6: calculate the factorial 10 use for
+        //10! = 10 * 9 * 8 * 7 ... * 1 = 3628800
+        int r3 = 1;
+        for(int i=10;i>=1;i--){ // starts at 10 counts down to 1, so i=10; i>=1; i--
+            r3 = r3 * i;
+        }
+        System.out.print(r3);
     }
 }
