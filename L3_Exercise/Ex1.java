@@ -53,12 +53,12 @@ public class Ex1{
     int i6 = 2;
     while(i6<=100){
       r2 = r2 + i6;
-      i6 = i6 + 2;
+      i6 = i6 + 2; // or i6+=2; (its the same thing)
     }
     System.out.println(r2);
     // Exercise 6: calculate the factorial 10 use while
     // 10! = 10 * 9 * 8 * 7 .... * 1 = 3628800
-    int r3=1;
+    int r3=1; // r3 has to be 1 because when multiplying you can not use 0.
     int i7 = 10;
     while(i7>=1){
       r3 = r3 * i7;
