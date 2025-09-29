@@ -1,5 +1,5 @@
 import java.util.Scanner;
-public class Ex1{
+public class Ex3{
   public static void main(String[] args) {
     /*
     Write a program that prompts the user for
