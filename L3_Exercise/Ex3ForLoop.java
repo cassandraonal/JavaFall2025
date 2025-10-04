@@ -1,5 +1,5 @@
 import java.util.Scanner;
-public class Ex3 {
+public class Ex3ForLoop {
     public static void main(String[] args){
         Scanner input = new Scanner(System.in);
         //Exercise 1: Print 1 to 100 use for
