@@ -1,5 +1,5 @@
 import java.util.Scanner;
-public class Ex2Whileloop{
+public class Ex2{
   public static void main(String[] args) {
     /*
     Exercise 10: Write a program to print all the

@@ -1,10 +1,6 @@
 import java.util.Scanner;
-public class Ex5ForLoop {
+public class Ex5 {
     public static void main(String[] args) {
-        for(int i = 0; i <5; i++){
-            System.out.print(i+" ");
-        }
-        System.out.println();
     /*
     Exercise 16: Ask user input an integer, and print the number as following.
     Enter integer: 4
