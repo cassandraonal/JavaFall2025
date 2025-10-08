@@ -8,3 +8,4 @@ public class Ex1{
         print_name();
     }
 }
+
