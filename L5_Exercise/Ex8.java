@@ -10,10 +10,10 @@ array.
 */
 public class Ex8{
     public static int min_array(int [] a){
-        int minimum = a[0];
+        int minimum = a[0]; // assumes the first in the array is the minimum
         for(int i=0;i<a.length;i++){
-            if(minimum>a[i])    
-                minimum = a[i];
+            if(minimum>a[i])    // checks if their is a smaller int than the first one in the array 
+                minimum = a[i];  // if there is it is updated as the minimum
         }
         return minimum;
     }
