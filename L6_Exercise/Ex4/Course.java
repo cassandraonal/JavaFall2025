@@ -16,6 +16,6 @@ class Course{
         else gpa = 'F';
     }
     void display(){
-        System.out.println("Name: "+name+", ID:"+id+", Midterm:"+midterm+", Final:"+finalexam+", GPA:"+gpa);
+        System.out.println("Name: "+name+", ID: "+id+", Midterm: "+midterm+", Final: "+finalexam+", GPA: "+gpa);
     }
 }
