@@ -9,6 +9,9 @@ class Course{
         id = i;
         midterm = m;
         finalexam = f;
+        calculateGPA();
+    }
+    void calculateGPA(){
         double score = midterm * 0.4 + finalexam * 0.6;
         if(score >= 90) gpa = 'A';
         else if(score >= 80) gpa = 'B';
