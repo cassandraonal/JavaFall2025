@@ -1,4 +1,4 @@
-public class Main{
+public class TestMoney{
     public static void main(String args[]){
     Money a = new Money(5);
     a.print(); // $5.00
