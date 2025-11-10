@@ -1,5 +1,3 @@
 public class Money{
-    void displayAmount(){
-      
-    }
+    void displayAmount(){}
 }

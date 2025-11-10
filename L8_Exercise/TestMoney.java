@@ -1,4 +1,14 @@
 public class TestMoney {
+     static double total(Money [] m){
+         double s = 0;
+         for(int i=0; i<m.length;i++){
+            if(m[i] instanceof Bill)
+                s += ((Bill)m[i]).MoneyAmount();
+            else if (m[i] instanceof Coin)
+                s += ((Coin)m[i]).MoneyAmount();
+         }
+         return s;
+    }
     public static void main(String args[]){
         Money a;
         a = new Bill(5);
@@ -14,7 +24,7 @@ public class TestMoney {
         a = new Dime();
         a.displayAmount();
 
-        Money [] b = new Money[5];
+        Money [] b = new Money[6];
         b[0] = new Bill(5);
         b[1] = new Coin(15);
         b[2] = new Penny();
@@ -23,5 +33,7 @@ public class TestMoney {
         b[5] = new Nickel();
         for(int i=0; i<b.length;i++)
             b[i].displayAmount();
+        System.out.println(((Bill)b[0]).MoneyAmount());
+        System.out.println(total(b));
     }    
 }

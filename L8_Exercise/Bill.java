@@ -4,6 +4,9 @@ public class Bill extends Money{
     void displayAmount(){
          System.out.println("Bill "+dollar);
     }
+    double MoneyAmount(){
+         return dollar;
+    }
 
 
 }
