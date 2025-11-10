@@ -1,3 +1,4 @@
+package L8_Practice.Ex1;
 public class Employee {
     private int employeeid;
     private String name;
@@ -11,6 +12,11 @@ public class Employee {
         salary = s;
     }
     Employee(){this(0,"uknown","none", 0);}
+    int getemployeeid(){return employeeid;}
+    int getSalary(){return salary;}
+    String getName(){return name;}
+    String getDepartment(){return department;}  
+  
     void display(){
         System.out.println("Employee id: "+employeeid);
         System.out.println("Department: "+department);

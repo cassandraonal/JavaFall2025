@@ -1,0 +1,15 @@
+public class Manager extends Employee{
+    private int bonus = 300;
+    Manager(int empid, String n, String d, int s, int l){
+        super(empid, n, d, s, l);
+    }
+    Manager(){this(0,"uknown","none", 0, 0);}
+    void display(){
+        System.out.println("Employee id: "+getemployeeid());
+        System.out.println("Department: "+getDepartment());
+        System.out.println("name: "+getName());
+        System.out.println("Salary: "+getSalary());
+        System.out.println("Bonus per month: "+bonus);
+        System.out.println("leave deduction: "+calculate_leave());
+    }
+}
