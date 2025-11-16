@@ -1,0 +1,3 @@
+interface runable {
+    void run();
+}
