@@ -7,7 +7,7 @@ public class Ex2{
         fruit.add("kiwi");
         System.out.println(fruit);
         fruit.set(2, "pear");
-        System.out.print(fruit);
+        System.out.println(fruit);
         fruit.remove(1);
         System.out.println(fruit);
         ArrayList<String> fruit2 = new ArrayList<String>();
