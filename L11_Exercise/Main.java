@@ -12,5 +12,9 @@ class Main{
         System.out.println(obj5.add(1.1,10)); // 11.1
         MyMath<Integer, Double> obj6 = new MyMath<Integer, Double>();
         System.out.println(obj6.add(10,1.4)); // 11
+        MyMath<String, Integer> obj7 = new MyMath<String, Integer>();
+        System.out.println(obj7.add("Hello",100)); // Hello100
+        MyMath<Integer, String> obj8 = new MyMath<Integer, String>();
+        System.out.println(obj8.add(100, "Hello")); // 100Hello
     }
 }
