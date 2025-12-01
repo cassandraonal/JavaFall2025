@@ -26,41 +26,43 @@ public class SchoolSystemUI extends JFrame {
 
     private DefaultTableModel tableModel;
 
-    public SchoolSystemUI() {
+public SchoolSystemUI() {
 
-        // WINDOW SETTINGS
-        setTitle("School Registration System");
-        setSize(1200, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+    // WINDOW SETTINGS
+    setTitle("School Registration System");
+    setSize(1200, 700);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLocationRelativeTo(null);
 
-        // LOAD SERVICES
-        studentService = new StudentService();
-        studentService.loadFromCSV("data/students.csv");
+    // LOAD SERVICES
+    studentService = new StudentService();
+    studentService.loadFromCSV("data/students.csv");
 
-        courseService = new CourseService();
-        courseService.loadFromCSV("data/courses.csv");
+    courseService = new CourseService();
+    courseService.loadFromCSV("data/courses.csv");
 
-        classroomService = new ClassroomService();
-        classroomService.loadFromCSV("data/classrooms.csv");
+    classroomService = new ClassroomService();
+    classroomService.loadFromCSV("data/classrooms.csv");
 
-        instructorService = new InstructorService();
-        instructorService.loadFromCSV("data/instructors.csv");
+    instructorService = new InstructorService();
+    instructorService.loadFromCSV("data/instructors.csv");
 
-        registrationService = new RegistrationService(
-                instructorService,
-                studentService,
-                courseService,
-                classroomService
-        );
+    registrationService = new RegistrationService(
+            instructorService,
+            studentService,
+            courseService,
+            classroomService
+    );
 
-        // TABS
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.add("Dashboard", createDashboardPanel());
-        tabs.add("Administration", createAdminPanel());
+    // TABS
+    JTabbedPane tabs = new JTabbedPane();
+    tabs.add("Dashboard", createDashboardPanel());
+    tabs.add("Administration", createAdminPanel());
 
-        add(tabs);
-    }
+    add(tabs);
+
+    setVisible(true);  
+}
 
     private JPanel createDashboardPanel() {
         JPanel panel = new JPanel(new BorderLayout());

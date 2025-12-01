@@ -7,27 +7,25 @@ public class Student {
 
     private String id;
     private String name;
+    private String major;
     private int currentCredits;
     private List<ClassSession> enrolledClasses;
 
-    public Student(String id, String name, int currentCredits) {
+    public Student(String id, String name, String major, int currentCredits) {
         this.id = id;
         this.name = name;
+        this.major = major;
         this.currentCredits = currentCredits;
         this.enrolledClasses = new ArrayList<>();
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public int getCurrentCredits() {
-        return currentCredits;
-    }
+    public String getMajor() { return major; }
+
+    public int getCurrentCredits() { return currentCredits; }
 
     public void addCredits(int credits) {
         this.currentCredits += credits;
@@ -39,6 +37,6 @@ public class Student {
 
     @Override
     public String toString() {
-        return name + " (" + id + ")";
+        return name + " (" + id + ") - " + major;
     }
 }

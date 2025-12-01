@@ -12,20 +12,23 @@ public class StudentService {
 
     private Map<String, Student> students = new HashMap<>();
 
-    public StudentService() {
-        // empty constructor
-    }
-
     public void loadFromCSV(String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
             String line;
             while ((line = br.readLine()) != null) {
+
                 String[] parts = line.split(",");
+
                 String id = parts[0];
                 String name = parts[1];
                 String major = parts[2];
-                Student s = new Student(id, name, major);
+
+                // FIX: student credits are the 4th value in the CSV
+                int currentCredits = Integer.parseInt(parts[3]);
+
+                Student s = new Student(id, name, major, currentCredits);
+
                 students.put(id, s);
             }
 
