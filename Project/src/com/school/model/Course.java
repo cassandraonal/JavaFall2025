@@ -1,30 +1,23 @@
 package com.school.model;
 
 public class Course {
-  private String courseId;
-  private String name;
-  private int credits;
 
-  public Course(String courseId; String name; int credits) {
-    this.courseId = courseId;
-    this.name = name;
-    this.credits = credits;
-  }
+    private String courseId;
+    private String name;
+    private int credits;
 
-  public String getCourseId() {
-    return courseId;
-  }
+    public Course(String courseId, String name, int credits) {
+        this.courseId = courseId;
+        this.name = name;
+        this.credits = credits;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getCourseId() { return courseId; }
+    public String getName() { return name; }
+    public int getCredits() { return credits; }
 
-  public int getCredits() {
-    return credits;
-  }
-
-  @Override
-  public String toString() {
-    return courseId + " - " + name;
-  }
+    @Override
+    public String toString() {
+        return courseId + " - " + name;
+    }
 }
