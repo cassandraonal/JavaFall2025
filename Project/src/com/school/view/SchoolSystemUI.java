@@ -155,20 +155,47 @@ private void updateInstructors() {
         instructorComboBox.addItem(i);
     }
 }
-    private void createSection() {
-        try {
-            Course c = (Course) courseComboBox.getSelectedItem();
-            Instructor i = (Instructor) instructorComboBox.getSelectedItem();
-            Classroom r = (Classroom) classroomComboBox.getSelectedItem();
-            int cap = Integer.parseInt(capacityField.getText());
+private void createSection() {
+    try {
+        Course c = (Course) courseComboBox.getSelectedItem();
+        Instructor i = (Instructor) instructorComboBox.getSelectedItem();
+        Classroom r = (Classroom) classroomComboBox.getSelectedItem();
 
-            registrationService.createClassSection(c, i, r, cap);
-
-            JOptionPane.showMessageDialog(this, "Section Created!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        // Validate selections
+        if (c == null || i == null || r == null) {
+            JOptionPane.showMessageDialog(this, 
+                "Please select a course, instructor, and classroom.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        // Validate capacity
+        int cap;
+        try {
+            cap = Integer.parseInt(capacityField.getText());
+            if (cap <= 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Capacity must be a positive number.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } catch (NumberFormatException nfe) {
+            JOptionPane.showMessageDialog(this, 
+                "Invalid capacity. Enter a number.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        registrationService.createClassSection(c, i, r, cap);
+
+        JOptionPane.showMessageDialog(this, "Section Created!");
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
 
     private void registerStudent() {
         try {
