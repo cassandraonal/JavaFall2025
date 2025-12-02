@@ -11,34 +11,39 @@ import java.util.Map;
 public class StudentService {
 
     private Map<String, Student> students = new HashMap<>();
-
+    
     public void loadFromCSV(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
-            String line;
-            while ((line = br.readLine()) != null) {
+        String line;
+        int lineNumber = 0;
 
-                String[] parts = line.split(",");
+        while ((line = br.readLine()) != null) {
+            lineNumber++;
+            String[] parts = line.split(",");
 
-                String id = parts[0];
-                String name = parts[1];
-                String major = parts[2];
-
-                // FIX: student credits are the 4th value in the CSV
-                int currentCredits = Integer.parseInt(parts[3]);
-
-                Student s = new Student(id, name, major, currentCredits);
-
-                students.put(id, s);
+            // Skip lines with fewer than 4 columns
+            if (parts.length < 4) {
+                System.out.println("Skipping invalid line " + lineNumber + ": " + line);
+                continue;
             }
 
-            System.out.println("Loaded " + students.size() + " students.");
+            String id = parts[0];
+            String name = parts[1];
+            String major = parts[2];
+            int currentCredits = Integer.parseInt(parts[3]);
 
-        } catch (IOException e) {
-            System.out.println("Error loading students: " + e.getMessage());
+            Student s = new Student(id, name, major, currentCredits);
+            students.put(id, s);
         }
-    }
 
+        System.out.println("Loaded " + students.size() + " students.");
+
+    } catch (IOException e) {
+        System.out.println("Error loading students: " + e.getMessage());
+    }
+}
+   
     public Map<String, Student> getAllStudents() {
         return students;
     }
