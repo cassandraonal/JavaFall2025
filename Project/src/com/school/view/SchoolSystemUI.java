@@ -183,23 +183,34 @@ public class SchoolSystemUI extends JFrame {
         }
     }
 
-    private void registerStudent() {
-        try {
-            Student s = (Student) studentComboBox.getSelectedItem();
-            ClassSession cs = (ClassSession) sectionComboBox.getSelectedItem();
+   private void registerStudent() {
+    if (sectionComboBox.getItemCount() == 0) {
+        JOptionPane.showMessageDialog(this,
+            "You must create a section first!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+    }
 
-            if (s == null || cs == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Please select a student and a section to register",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+    try {
+        Student s = (Student) studentComboBox.getSelectedItem();
+        ClassSession cs = (ClassSession) sectionComboBox.getSelectedItem();
 
-            registrationService.registerStudent(s, cs);
-
-            JOptionPane.showMessageDialog(this, "Student Registered!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        if (s == null || cs == null) {
+            JOptionPane.showMessageDialog(this,
+                "Please select a student and a section to register",
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        registrationService.registerStudent(s, cs);
+        JOptionPane.showMessageDialog(this, "Student Registered!");
+
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this,
+            e.getMessage(),
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
     }
 }
