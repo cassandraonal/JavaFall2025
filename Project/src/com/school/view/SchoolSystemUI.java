@@ -54,18 +54,13 @@ public class SchoolSystemUI extends JFrame {
                 classroomService
         );
 
-        // Initialize sectionComboBox BEFORE GUI is displayed
-        sectionComboBox = new JComboBox<>();
-        for (ClassSession cs : registrationService.getAllSections().values()) {
-            sectionComboBox.addItem(cs);
-        }
-
         // TABS
         JTabbedPane tabs = new JTabbedPane();
         tabs.add("Dashboard", createDashboardPanel());
         tabs.add("Administration", createAdminPanel());
 
         add(tabs);
+
         setVisible(true);
     }
 
@@ -88,17 +83,12 @@ public class SchoolSystemUI extends JFrame {
     private JPanel createSectionForm() {
         JPanel panel = new JPanel(new GridLayout(6, 2));
 
-        // Courses
         courseComboBox = new JComboBox<>();
         for (Course c : courseService.getAllCourses().values())
             courseComboBox.addItem(c);
 
-        // Instructors
         instructorComboBox = new JComboBox<>();
-        for (Instructor i : instructorService.getAllInstructors().values())
-            instructorComboBox.addItem(i);
 
-        // Classrooms
         classroomComboBox = new JComboBox<>();
         for (Classroom r : classroomService.getAllClassrooms().values())
             classroomComboBox.addItem(r);
@@ -134,6 +124,9 @@ public class SchoolSystemUI extends JFrame {
         for (Student s : studentService.getAllStudents().values())
             studentComboBox.addItem(s);
 
+        sectionComboBox = new JComboBox<>();
+        updateSections();
+
         JButton btn = new JButton("Register");
         btn.addActionListener(e -> registerStudent());
 
@@ -152,17 +145,23 @@ public class SchoolSystemUI extends JFrame {
         instructorComboBox.removeAllItems();
 
         if (selected == null) {
+            // If no course is selected, show all instructors
             for (Instructor i : instructorService.getAllInstructors().values()) {
-                if (i != null) instructorComboBox.addItem(i);
+                instructorComboBox.addItem(i);
             }
             return;
         }
 
         List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
-        if (eligible != null) {
-            for (Instructor i : eligible) {
-                if (i != null) instructorComboBox.addItem(i);
-            }
+        for (Instructor i : eligible) {
+            instructorComboBox.addItem(i);
+        }
+    }
+
+    private void updateSections() {
+        sectionComboBox.removeAllItems();
+        for (ClassSession cs : registrationService.getActiveSections()) {
+            sectionComboBox.addItem(cs);
         }
     }
 
@@ -171,38 +170,16 @@ public class SchoolSystemUI extends JFrame {
             Course c = (Course) courseComboBox.getSelectedItem();
             Instructor i = (Instructor) instructorComboBox.getSelectedItem();
             Classroom r = (Classroom) classroomComboBox.getSelectedItem();
+            int cap = Integer.parseInt(capacityField.getText());
 
-            if (c == null || i == null || r == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Please select a course, instructor, and classroom.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            registrationService.createClassSection(c, i, r, cap);
 
-            int cap;
-            try {
-                cap = Integer.parseInt(capacityField.getText());
-                if (cap <= 0) throw new NumberFormatException();
-            } catch (NumberFormatException nfe) {
-                JOptionPane.showMessageDialog(this,
-                        "Invalid capacity. Enter a positive number.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            ClassSession newSection = registrationService.createClassSection(c, i, r, cap);
-
-            // Add new section to combo box
-            if (newSection != null)
-                sectionComboBox.addItem(newSection);
+            // Refresh section combo box
+            updateSections();
 
             JOptionPane.showMessageDialog(this, "Section Created!");
-
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -213,26 +190,16 @@ public class SchoolSystemUI extends JFrame {
 
             if (s == null || cs == null) {
                 JOptionPane.showMessageDialog(this,
-                        "Please select a student and a section to register.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (cs.isFull()) {
-                JOptionPane.showMessageDialog(this,
-                        "Section is full. Cannot register student.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Please select a student and a section to register",
+                        "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             registrationService.registerStudent(s, cs);
-            JOptionPane.showMessageDialog(this, "Student Registered!");
 
+            JOptionPane.showMessageDialog(this, "Student Registered!");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
