@@ -125,7 +125,6 @@ public class SchoolSystemUI extends JFrame {
             studentComboBox.addItem(s);
 
         sectionComboBox = new JComboBox<>();
-        // Initially empty; will populate after creating sections
 
         JButton btn = new JButton("Register");
         btn.addActionListener(e -> registerStudent());
@@ -145,11 +144,10 @@ public class SchoolSystemUI extends JFrame {
         instructorComboBox.removeAllItems();
 
         if (selected == null) {
-            // If no course is selected, show all instructors
             for (Instructor i : instructorService.getAllInstructors().values()) {
                 instructorComboBox.addItem(i);
             }
-            return; // exit early
+            return;
         }
 
         List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
@@ -157,52 +155,43 @@ public class SchoolSystemUI extends JFrame {
             instructorComboBox.addItem(i);
         }
     }
-private void createSection() {
-    try {
-        Course c = (Course) courseComboBox.getSelectedItem();
-        Instructor i = (Instructor) instructorComboBox.getSelectedItem();
-        Classroom r = (Classroom) classroomComboBox.getSelectedItem();
 
-        // Validate selections
-        if (c == null || i == null || r == null) {
-            JOptionPane.showMessageDialog(this, 
-                "Please select a course, instructor, and classroom.", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Validate capacity
-        int cap;
+    private void createSection() {
         try {
-            cap = Integer.parseInt(capacityField.getText());
-            if (cap <= 0) {
+            Course c = (Course) courseComboBox.getSelectedItem();
+            Instructor i = (Instructor) instructorComboBox.getSelectedItem();
+            Classroom r = (Classroom) classroomComboBox.getSelectedItem();
+
+            if (c == null || i == null || r == null) {
                 JOptionPane.showMessageDialog(this, 
-                    "Capacity must be a positive number.", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                    "Please select a course, instructor, and classroom.", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-        } catch (NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(this, 
-                "Invalid capacity. Enter a number.", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-            return;
+
+            int cap;
+            try {
+                cap = Integer.parseInt(capacityField.getText());
+                if (cap <= 0) throw new NumberFormatException();
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(this, 
+                    "Invalid capacity. Enter a positive number.", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Create the section
+            ClassSession newSection = registrationService.createClassSection(c, i, r, cap);
+
+            // Add the new section to the combo box immediately
+            sectionComboBox.addItem(newSection);
+
+            JOptionPane.showMessageDialog(this, "Section Created!");
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        // Create the section
-        ClassSession newSection = registrationService.createClassSection(c, i, r, cap);
-
-        JOptionPane.showMessageDialog(this, "Section Created!");
-
-        // Add the new section to the sectionComboBox
-        sectionComboBox.addItem(newSection);
-
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
 
     private void registerStudent() {
         try {
@@ -210,10 +199,9 @@ private void createSection() {
             ClassSession cs = (ClassSession) sectionComboBox.getSelectedItem();
 
             if (s == null || cs == null) {
-                JOptionPane.showMessageDialog(this,
-                    "Please select a student and a section to register.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    "Please select a student and a section to register.", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -225,4 +213,3 @@ private void createSection() {
         }
     }
 }
-
