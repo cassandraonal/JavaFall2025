@@ -139,15 +139,22 @@ public SchoolSystemUI() {
         return panel;
     }
 
-    private void updateInstructors() {
-        Course selected = (Course) courseComboBox.getSelectedItem();
-        instructorComboBox.removeAllItems();
-        if (selected != null) {
-            List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
-            for (Instructor i : eligible)
-                instructorComboBox.addItem(i);
-        }
+   private void updateInstructors() {
+    Course selected = (Course) courseComboBox.getSelectedItem();
+    instructorComboBox.removeAllItems();
+
+    if (selected == null) {
+        // Optionally, load all instructors instead of filtering
+        // for (Instructor i : instructorService.getAllInstructors().values())
+        //     instructorComboBox.addItem(i);
+        return; // exit early
     }
+
+    List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
+    for (Instructor i : eligible)
+        instructorComboBox.addItem(i);
+}
+
 
     private void createSection() {
         try {
