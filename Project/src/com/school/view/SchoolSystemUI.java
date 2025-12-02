@@ -26,43 +26,43 @@ public class SchoolSystemUI extends JFrame {
 
     private DefaultTableModel tableModel;
 
-public SchoolSystemUI() {
+    public SchoolSystemUI() {
 
-    // WINDOW SETTINGS
-    setTitle("School Registration System");
-    setSize(1200, 700);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setLocationRelativeTo(null);
+        // WINDOW SETTINGS
+        setTitle("School Registration System");
+        setSize(1200, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-    // LOAD SERVICES
-    studentService = new StudentService();
-    studentService.loadFromCSV("data/students.csv");
+        // LOAD SERVICES
+        studentService = new StudentService();
+        studentService.loadFromCSV("data/students.csv");
 
-    courseService = new CourseService();
-    courseService.loadFromCSV("data/courses.csv");
+        courseService = new CourseService();
+        courseService.loadFromCSV("data/courses.csv");
 
-    classroomService = new ClassroomService();
-    classroomService.loadFromCSV("data/classrooms.csv");
+        classroomService = new ClassroomService();
+        classroomService.loadFromCSV("data/classrooms.csv");
 
-    instructorService = new InstructorService();
-    instructorService.loadFromCSV("data/instructors.csv");
+        instructorService = new InstructorService();
+        instructorService.loadFromCSV("data/instructors.csv");
 
-    registrationService = new RegistrationService(
-            instructorService,
-            studentService,
-            courseService,
-            classroomService
-    );
+        registrationService = new RegistrationService(
+                instructorService,
+                studentService,
+                courseService,
+                classroomService
+        );
 
-    // TABS
-    JTabbedPane tabs = new JTabbedPane();
-    tabs.add("Dashboard", createDashboardPanel());
-    tabs.add("Administration", createAdminPanel());
+        // TABS
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.add("Dashboard", createDashboardPanel());
+        tabs.add("Administration", createAdminPanel());
 
-    add(tabs);
+        add(tabs);
 
-    setVisible(true);  
-}
+        setVisible(true);  
+    }
 
     private JPanel createDashboardPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -125,6 +125,7 @@ public SchoolSystemUI() {
             studentComboBox.addItem(s);
 
         sectionComboBox = new JComboBox<>();
+        // Initially empty; will populate after creating sections
 
         JButton btn = new JButton("Register");
         btn.addActionListener(e -> registerStudent());
@@ -138,75 +139,92 @@ public SchoolSystemUI() {
 
         return panel;
     }
-private void updateInstructors() {
-    Course selected = (Course) courseComboBox.getSelectedItem();
-    instructorComboBox.removeAllItems();
 
-    if (selected == null) {
-        // If no course is selected, show all instructors
-        for (Instructor i : instructorService.getAllInstructors().values()) {
+    private void updateInstructors() {
+        Course selected = (Course) courseComboBox.getSelectedItem();
+        instructorComboBox.removeAllItems();
+
+        if (selected == null) {
+            // If no course is selected, show all instructors
+            for (Instructor i : instructorService.getAllInstructors().values()) {
+                instructorComboBox.addItem(i);
+            }
+            return; // exit early
+        }
+
+        List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
+        for (Instructor i : eligible) {
             instructorComboBox.addItem(i);
         }
-        return; // exit early
     }
 
-    List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
-    for (Instructor i : eligible) {
-        instructorComboBox.addItem(i);
-    }
-}
-private void createSection() {
-    try {
-        Course c = (Course) courseComboBox.getSelectedItem();
-        Instructor i = (Instructor) instructorComboBox.getSelectedItem();
-        Classroom r = (Classroom) classroomComboBox.getSelectedItem();
-
-        // Validate selections
-        if (c == null || i == null || r == null) {
-            JOptionPane.showMessageDialog(this, 
-                "Please select a course, instructor, and classroom.", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Validate capacity
-        int cap;
+    private void createSection() {
         try {
-            cap = Integer.parseInt(capacityField.getText());
-            if (cap <= 0) {
+            Course c = (Course) courseComboBox.getSelectedItem();
+            Instructor i = (Instructor) instructorComboBox.getSelectedItem();
+            Classroom r = (Classroom) classroomComboBox.getSelectedItem();
+
+            // Validate selections
+            if (c == null || i == null || r == null) {
                 JOptionPane.showMessageDialog(this, 
-                    "Capacity must be a positive number.", 
+                    "Please select a course, instructor, and classroom.", 
                     "Error", 
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-        } catch (NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(this, 
-                "Invalid capacity. Enter a number.", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-            return;
+
+            // Validate capacity
+            int cap;
+            try {
+                cap = Integer.parseInt(capacityField.getText());
+                if (cap <= 0) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Capacity must be a positive number.", 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(this, 
+                    "Invalid capacity. Enter a number.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            registrationService.createClassSection(c, i, r, cap);
+            JOptionPane.showMessageDialog(this, "Section Created!");
+
+            // Update section combo box so you can register students
+            sectionComboBox.removeAllItems();
+            for (ClassSession cs : registrationService.getAllSections().values()) {
+                sectionComboBox.addItem(cs);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        registrationService.createClassSection(c, i, r, cap);
-
-        JOptionPane.showMessageDialog(this, "Section Created!");
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
 
     private void registerStudent() {
         try {
             Student s = (Student) studentComboBox.getSelectedItem();
             ClassSession cs = (ClassSession) sectionComboBox.getSelectedItem();
 
-            registrationService.registerStudent(s, cs);
+            if (s == null || cs == null) {
+                JOptionPane.showMessageDialog(this,
+                    "Please select a student and a section to register.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
+            registrationService.registerStudent(s, cs);
             JOptionPane.showMessageDialog(this, "Student Registered!");
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
+
