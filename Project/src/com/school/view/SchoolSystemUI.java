@@ -54,13 +54,18 @@ public class SchoolSystemUI extends JFrame {
                 classroomService
         );
 
+        // Initialize sectionComboBox BEFORE GUI is displayed
+        sectionComboBox = new JComboBox<>();
+        for (ClassSession cs : registrationService.getAllSections().values()) {
+            sectionComboBox.addItem(cs);
+        }
+
         // TABS
         JTabbedPane tabs = new JTabbedPane();
         tabs.add("Dashboard", createDashboardPanel());
         tabs.add("Administration", createAdminPanel());
 
         add(tabs);
-
         setVisible(true);
     }
 
@@ -129,8 +134,6 @@ public class SchoolSystemUI extends JFrame {
         for (Student s : studentService.getAllStudents().values())
             studentComboBox.addItem(s);
 
-        sectionComboBox = new JComboBox<>();
-
         JButton btn = new JButton("Register");
         btn.addActionListener(e -> registerStudent());
 
@@ -150,8 +153,7 @@ public class SchoolSystemUI extends JFrame {
 
         if (selected == null) {
             for (Instructor i : instructorService.getAllInstructors().values()) {
-                if (i != null)
-                    instructorComboBox.addItem(i);
+                if (i != null) instructorComboBox.addItem(i);
             }
             return;
         }
@@ -159,8 +161,7 @@ public class SchoolSystemUI extends JFrame {
         List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
         if (eligible != null) {
             for (Instructor i : eligible) {
-                if (i != null)
-                    instructorComboBox.addItem(i);
+                if (i != null) instructorComboBox.addItem(i);
             }
         }
     }
@@ -235,4 +236,3 @@ public class SchoolSystemUI extends JFrame {
         }
     }
 }
-
