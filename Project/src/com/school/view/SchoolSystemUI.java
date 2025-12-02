@@ -183,7 +183,7 @@ public class SchoolSystemUI extends JFrame {
         }
     }
 
-   private void registerStudent() {
+private void registerStudent() {
     if (sectionComboBox.getItemCount() == 0) {
         JOptionPane.showMessageDialog(this,
             "You must create a section first!",
@@ -213,4 +213,5 @@ public class SchoolSystemUI extends JFrame {
             "Error",
             JOptionPane.ERROR_MESSAGE);
     }
+}
 }
