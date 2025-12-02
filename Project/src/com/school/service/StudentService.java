@@ -12,7 +12,7 @@ public class StudentService {
 
     private Map<String, Student> students = new HashMap<>();
     
-    public void loadFromCSV(String filename) {
+   public void loadFromCSV(String filename) {
     try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
         String line;
@@ -22,8 +22,8 @@ public class StudentService {
             lineNumber++;
             String[] parts = line.split(",");
 
-            // Skip lines with fewer than 4 columns
-            if (parts.length < 4) {
+            // Skip completely empty lines
+            if (parts.length < 3) {
                 System.out.println("Skipping invalid line " + lineNumber + ": " + line);
                 continue;
             }
@@ -31,7 +31,16 @@ public class StudentService {
             String id = parts[0];
             String name = parts[1];
             String major = parts[2];
-            int currentCredits = Integer.parseInt(parts[3]);
+
+            // Use 0 credits if missing
+            int currentCredits = 0;
+            if (parts.length >= 4 && !parts[3].isEmpty()) {
+                try {
+                    currentCredits = Integer.parseInt(parts[3]);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid credits on line " + lineNumber + ", defaulting to 0.");
+                }
+            }
 
             Student s = new Student(id, name, major, currentCredits);
             students.put(id, s);
@@ -43,6 +52,7 @@ public class StudentService {
         System.out.println("Error loading students: " + e.getMessage());
     }
 }
+
    
     public Map<String, Student> getAllStudents() {
         return students;
