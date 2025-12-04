@@ -1,310 +1,173 @@
-// FULLY IMPLEMENTED GUI – OPTION A (Complete Project Requirements)
-// Includes: Multi-row tabs, menu bar, dashboard styling, blue borders,
-// create section, register student, full persistence save/load, auto-refresh.
-// PLACE IN: src/com/school/view/SchoolSystemUI.java
-
 package com.school.view;
 
 import com.school.model.*;
 import com.school.service.*;
 
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 public class SchoolSystemUI extends JFrame {
 
-    private RegistrationService registrationService;
-    private StudentService studentService;
-    private CourseService courseService;
-    private InstructorService instructorService;
-    private ClassroomService classroomService;
+    private StudentService studentService = new StudentService();
+    private CourseService courseService = new CourseService();
+    private InstructorService instructorService = new InstructorService();
+    private ClassroomService classroomService = new ClassroomService();
+    private RegistrationService registrationService = new RegistrationService();
 
-    private JTable tblSections;
-    private DefaultTableModel sectionsModel;
+    private JTable table;
+    private DefaultTableModel tableModel;
 
-    private JComboBox<Course> cmbCourse_create;
-    private JComboBox<Instructor> cmbInstructor_create;
-    private JComboBox<Classroom> cmbRoom_create;
-    private JTextField txtCapacity;
-
-    private JComboBox<Student> cmbStudent_register;
-    private JComboBox<ClassSession> cmbSection_register;
-
-    private JLabel lblLastUpdated;
-
-    private final String SAVE_FILE = "saved_sections.csv";
-
-    public SchoolSystemUI(StudentService ss, InstructorService is, CourseService cs,
-                           ClassroomService rs, RegistrationService reg) {
-
-        this.studentService = ss;
-        this.instructorService = is;
-        this.courseService = cs;
-        this.classroomService = rs;
-        this.registrationService = reg;
-
-        setTitle("Academic Scheduling System");
-        setSize(1100, 700);
+    public SchoolSystemUI() {
+        setTitle("School System");
+        setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        // Load all CSV data
+        loadData();
+
+        // Panel for buttons
+        JPanel buttonPanel = new JPanel();
+        JButton studentBtn = new JButton("Students");
+        JButton courseBtn = new JButton("Courses");
+        JButton instructorBtn = new JButton("Instructors");
+        JButton classroomBtn = new JButton("Classrooms");
+        JButton registerBtn = new JButton("Register Student");
+
+        buttonPanel.add(studentBtn);
+        buttonPanel.add(courseBtn);
+        buttonPanel.add(instructorBtn);
+        buttonPanel.add(classroomBtn);
+        buttonPanel.add(registerBtn);
+
+        // Table setup
+        tableModel = new DefaultTableModel();
+        table = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        // Button actions
+        studentBtn.addActionListener(e -> displayStudents());
+        courseBtn.addActionListener(e -> displayCourses());
+        instructorBtn.addActionListener(e -> displayInstructors());
+        classroomBtn.addActionListener(e -> displayClassrooms());
+        registerBtn.addActionListener(e -> registerStudentToCourse());
+
+        // Layout
         setLayout(new BorderLayout());
+        add(buttonPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
 
-        setSystemMenuBar();
-
-        JTabbedPane mainTabs = new JTabbedPane();
-        mainTabs.addTab("Dashboard", dashboardPanel());
-        mainTabs.addTab("Courses", new JPanel());
-        mainTabs.addTab("Students", new JPanel());
-        mainTabs.addTab("Administration", adminPanel());
-
-        JTabbedPane secondRow = new JTabbedPane();
-        secondRow.addTab("User Management", new JPanel());
-        secondRow.addTab("Course Catalog", new JPanel());
-        secondRow.addTab("Reporting", new JPanel());
-        secondRow.addTab("Settings", new JPanel());
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.add(mainTabs, BorderLayout.NORTH);
-        wrapper.add(secondRow, BorderLayout.CENTER);
-
-        add(wrapper, BorderLayout.CENTER);
-
-        loadSavedSections();
+        setVisible(true);
     }
 
-    private void setSystemMenuBar() {
-        JMenuBar bar = new JMenuBar();
-        JMenu file = new JMenu("File");
-        JMenuItem save = new JMenuItem("Save All");
-        save.addActionListener(e -> saveAllSections());
-        file.add(save);
-
-        JMenuItem exit = new JMenuItem("Exit");
-        exit.addActionListener(e -> System.exit(0));
-        file.add(exit);
-
-        bar.add(file);
-        setJMenuBar(bar);
+    private void loadData() {
+        studentService.loadFromCSV("student.csv");
+        courseService.loadFromCSV("course.csv");
+        instructorService.loadFromCSV("instructor.csv");
+        classroomService.loadFromCSV("classroom.csv");
+        registrationService.loadFromCSV("registration.csv"); // optional, load existing registrations
     }
 
-    private JPanel dashboardPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new EmptyBorder(20,20,20,20));
+    private void displayStudents() {
+        tableModel.setRowCount(0);
+        tableModel.setColumnCount(0);
+        tableModel.addColumn("ID");
+        tableModel.addColumn("Name");
+        tableModel.addColumn("Major");
 
-        JLabel title = new JLabel("SYSTEM DASHBOARD");
-        title.setFont(new Font("SansSerif", Font.BOLD, 28));
-        panel.add(title, BorderLayout.NORTH);
-
-        String[] cols = {"Course ID","Section #","Instructor","Room","Enrolled/Cap"};
-        sectionsModel = new DefaultTableModel(cols, 0);
-        tblSections = new JTable(sectionsModel);
-        tblSections.setRowHeight(28);
-
-        JScrollPane scroll = new JScrollPane(tblSections);
-        scroll.setBorder(new LineBorder(new Color(30,144,255), 3));
-
-        panel.add(scroll, BorderLayout.CENTER);
-
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        JButton btnRefresh = new JButton("Refresh Data");
-        btnRefresh.addActionListener(e -> refreshSectionsTable());
-        bottom.add(btnRefresh);
-
-        JButton btnExport = new JButton("Export to CSV");
-        btnExport.addActionListener(e -> exportCSV());
-        bottom.add(btnExport);
-
-        JButton btnPrint = new JButton("Print Report");
-        bottom.add(btnPrint);
-
-        lblLastUpdated = new JLabel();
-        updateTimestamp();
-        bottom.add(lblLastUpdated);
-
-        panel.add(bottom, BorderLayout.SOUTH);
-        return panel;
+        Map<String, Student> students = studentService.getAllStudents();
+        for (Student s : students.values()) {
+            tableModel.addRow(new Object[]{s.getId(), s.getName(), s.getMajor()});
+        }
     }
 
-    private JPanel adminPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(new EmptyBorder(20,20,20,20));
+    private void displayCourses() {
+        tableModel.setRowCount(0);
+        tableModel.setColumnCount(0);
+        tableModel.addColumn("Course ID");
+        tableModel.addColumn("Name");
+        tableModel.addColumn("Credits");
 
-        panel.add(createSectionPanel());
-        panel.add(Box.createVerticalStrut(20));
-        panel.add(registerStudentPanel());
-
-        return panel;
+        Map<String, Course> courses = courseService.getAllCourses();
+        for (Course c : courses.values()) {
+            tableModel.addRow(new Object[]{c.getCourseId(), c.getName(), c.getCredits()});
+        }
     }
 
-    private JPanel createSectionPanel() {
-        JPanel createSec = new JPanel(new GridBagLayout());
-        createSec.setBorder(new TitledBorder("Create Class Section"));
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(10,10,10,10);
+    private void displayInstructors() {
+        tableModel.setRowCount(0);
+        tableModel.setColumnCount(0);
+        tableModel.addColumn("ID");
+        tableModel.addColumn("Name");
+        tableModel.addColumn("Qualified Courses");
 
-        cmbCourse_create = new JComboBox<>(courseService.getAllCourses().values().toArray(new Course[0]));
-        cmbInstructor_create = new JComboBox<>();
-        cmbRoom_create = new JComboBox<>(classroomService.getAllRooms().values().toArray(new Classroom[0]));
-        txtCapacity = new JTextField(5);
-
-        cmbCourse_create.addActionListener(e -> loadEligibleInstructors());
-        loadEligibleInstructors();
-
-        c.gridx=0; c.gridy=0; createSec.add(new JLabel("Select Course"), c);
-        c.gridx=1; createSec.add(cmbCourse_create, c);
-
-        c.gridx=0; c.gridy=1; createSec.add(new JLabel("Instructor"), c);
-        c.gridx=1; createSec.add(cmbInstructor_create, c);
-
-        c.gridx=0; c.gridy=2; createSec.add(new JLabel("Select Room"), c);
-        c.gridx=1; createSec.add(cmbRoom_create, c);
-
-        c.gridx=0; c.gridy=3; createSec.add(new JLabel("Capacity"), c);
-        c.gridx=1; createSec.add(txtCapacity, c);
-
-        JButton btnCreate = new JButton("Create");
-        btnCreate.addActionListener(e -> createSection());
-        c.gridx=1; c.gridy=4; createSec.add(btnCreate, c);
-
-        return createSec;
-    }
-
-    private JPanel registerStudentPanel() {
-        JPanel regPanel = new JPanel(new GridBagLayout());
-        regPanel.setBorder(new TitledBorder("Register Student"));
-        GridBagConstraints r = new GridBagConstraints();
-        r.insets = new Insets(10,10,10,10);
-
-        cmbStudent_register = new JComboBox<>(studentService.getAllStudents().values().toArray(new Student[0]));
-        cmbSection_register = new JComboBox<>(registrationService.getActiveSections().toArray(new ClassSession[0]));
-
-        r.gridx=0; r.gridy=0; regPanel.add(new JLabel("Select Student"), r);
-        r.gridx=1; regPanel.add(cmbStudent_register, r);
-
-        r.gridx=0; r.gridy=1; regPanel.add(new JLabel("Select Section"), r);
-        r.gridx=1; regPanel.add(cmbSection_register, r);
-
-        JButton btnReg = new JButton("Register");
-        btnReg.addActionListener(e -> registerStudent());
-        r.gridx=1; r.gridy=2; regPanel.add(btnReg, r);
-
-        return regPanel;
-    }
-
-    private void refreshSectionsTable() {
-        sectionsModel.setRowCount(0);
-        for (ClassSession s : registrationService.getActiveSections()) {
-            sectionsModel.addRow(new Object[]{
-                s.getCourse().getCourseId(),
-                String.format("%03d", s.getSectionNumber()),
-                s.getInstructor().getName(),
-                s.getRoom().getRoomId(),
-                s.getEnrolledStudents().size() + "/" + s.getCapacity()
+        Map<String, Instructor> instructors = instructorService.getAllInstructors();
+        for (Instructor i : instructors.values()) {
+            tableModel.addRow(new Object[]{
+                i.getId(),
+                i.getName(),
+                String.join("|", i.getTeachingAssignment().stream().map(cs -> cs.getCourse().getCourseId()).toList())
             });
         }
-        updateTimestamp();
     }
 
-    private void updateTimestamp() {
-        lblLastUpdated.setText("Last updated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-    }
+    private void displayClassrooms() {
+        tableModel.setRowCount(0);
+        tableModel.setColumnCount(0);
+        tableModel.addColumn("Room Number");
+        tableModel.addColumn("Has Computer");
+        tableModel.addColumn("Has Smartboard");
 
-    private void loadEligibleInstructors() {
-        Course c = (Course) cmbCourse_create.getSelectedItem();
-        cmbInstructor_create.removeAllItems();
-        for (Instructor i : registrationService.findEligibleInstructors(c)) {
-            cmbInstructor_create.addItem(i);
+        Map<String, Classroom> classrooms = classroomService.getAllClassrooms();
+        for (Classroom r : classrooms.values()) {
+            tableModel.addRow(new Object[]{r.getRoomNumber(), r.hasComputer(), r.hasSmartboard()});
         }
     }
 
-    private void createSection() {
-        try {
-            Course c = (Course) cmbCourse_create.getSelectedItem();
-            Instructor i = (Instructor) cmbInstructor_create.getSelectedItem();
-            Classroom r = (Classroom) cmbRoom_create.getSelectedItem();
-            int capacity = Integer.parseInt(txtCapacity.getText());
+    // === Register student to course ===
+    private void registerStudentToCourse() {
+        String studentId = JOptionPane.showInputDialog(this, "Enter Student ID:");
+        Student student = studentService.getStudentById(studentId);
+        if (student == null) {
+            JOptionPane.showMessageDialog(this, "Student not found!");
+            return;
+        }
 
-            ClassSession cs = registrationService.createClassSection(c, i, r, capacity);
-            cmbSection_register.addItem(cs);
+        String courseId = JOptionPane.showInputDialog(this, "Enter Course ID to register:");
+        Course course = courseService.getCourseById(courseId);
+        if (course == null) {
+            JOptionPane.showMessageDialog(this, "Course not found!");
+            return;
+        }
 
-            saveAllSections();
-            refreshSectionsTable();
-            JOptionPane.showMessageDialog(this, "Section created successfully!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        // Create registration
+        ClassSession cs = new ClassSession(course);
+        registrationService.registerStudent(student, cs);
+
+        // Save to CSV
+        saveRegistration(student, cs);
+
+        JOptionPane.showMessageDialog(this, "Student " + student.getName() + " registered to course " + course.getName() + "!");
+    }
+
+    private void saveRegistration(Student student, ClassSession cs) {
+        try (FileWriter fw = new FileWriter("registration.csv", true);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            // CSV format: studentId,courseId
+            out.println(student.getId() + "," + cs.getCourse().getCourseId());
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving registration: " + e.getMessage());
         }
     }
 
-    private void registerStudent() {
-        try {
-            Student s = (Student) cmbStudent_register.getSelectedItem();
-            ClassSession cs = (ClassSession) cmbSection_register.getSelectedItem();
-
-            registrationService.registerStudent(s, cs);
-
-            saveAllSections();
-            refreshSectionsTable();
-            JOptionPane.showMessageDialog(this, "Student registered successfully!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void exportCSV() {
-        saveAllSections();
-        JOptionPane.showMessageDialog(this, "Exported to saved_sections.csv");
-    }
-
-    private void saveAllSections() {
-        try (FileWriter fw = new FileWriter(SAVE_FILE)) {
-            for (ClassSession s : registrationService.getActiveSections()) {
-                fw.write(s.getCourse().getCourseId() + "," +
-                        s.getSectionNumber() + "," +
-                        s.getInstructor().getId() + "," +
-                        s.getRoom().getRoomId() + "," +
-                        s.getCapacity());
-                try (BufferedWriter fw = new BufferedWriter(new FileWriter("yourfile.txt", true))) {
-    // Write content to the file
-    fw.write("Some text goes here");  // replace with your actual content
-    fw.newLine();                     // writes a newline safely
-
-    // If you need multiple lines:
-    fw.write("Another line of text");
-    fw.newLine();
-} catch (IOException e) {
-    e.printStackTrace();
-}
-
-            }
-        } catch (Exception ignored) {}
-    }
-
-    private void loadSavedSections() {
-        File f = new File(SAVE_FILE);
-        if (!f.exists()) return;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] p = line.split(",");
-
-                Course c = courseService.getCourseById(p[0]);
-                Instructor i = instructorService.getInstructorById(p[2]);
-                Classroom r = classroomService.getRoomById(p[3]);
-                int cap = Integer.parseInt(p[4]);
-
-                registrationService.createClassSection(c, i, r, cap);
-            }
-        } catch (Exception ignored) {}
-
-        refreshSectionsTable();
+    // Main method to launch GUI
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(SchoolSystemUI::new);
     }
 }
