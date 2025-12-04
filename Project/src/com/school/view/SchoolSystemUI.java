@@ -271,8 +271,18 @@ public class SchoolSystemUI extends JFrame {
                         s.getInstructor().getId() + "," +
                         s.getRoom().getRoomId() + "," +
                         s.getCapacity());
-                fw.write("
-");
+                try (BufferedWriter fw = new BufferedWriter(new FileWriter("yourfile.txt", true))) {
+    // Write content to the file
+    fw.write("Some text goes here");  // replace with your actual content
+    fw.newLine();                     // writes a newline safely
+
+    // If you need multiple lines:
+    fw.write("Another line of text");
+    fw.newLine();
+} catch (IOException e) {
+    e.printStackTrace();
+}
+
             }
         } catch (Exception ignored) {}
     }
