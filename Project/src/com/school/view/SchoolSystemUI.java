@@ -213,4 +213,5 @@ private void registerStudent() {
             "Error",
             JOptionPane.ERROR_MESSAGE);
     }
+    }
 }
