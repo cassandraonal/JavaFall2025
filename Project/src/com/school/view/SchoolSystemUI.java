@@ -13,11 +13,11 @@ import java.util.Map;
 
 public class SchoolSystemUI extends JFrame {
 
-  private StudentService studentService = new StudentService();
-private CourseService courseService = new CourseService();
-private InstructorService instructorService = new InstructorService();
-private ClassroomService classroomService = new ClassroomService();
-private RegistrationService registrationService = new RegistrationService(
+  private StudentService studentService = new StudentService(); 
+  private CourseService courseService = new CourseService();
+  private InstructorService instructorService = new InstructorService();
+  private ClassroomService classroomService = new ClassroomService();
+  private RegistrationService registrationService = new RegistrationService(
     instructorService,
     studentService,
     courseService,
