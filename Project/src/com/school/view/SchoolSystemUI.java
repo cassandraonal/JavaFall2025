@@ -6,174 +6,211 @@ import com.school.service.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
 import java.util.List;
-import java.util.Map;
 
 public class SchoolSystemUI extends JFrame {
 
-  private StudentService studentService = new StudentService(); 
-  private CourseService courseService = new CourseService();
-  private InstructorService instructorService = new InstructorService();
-  private ClassroomService classroomService = new ClassroomService();
-  private RegistrationService registrationService = new RegistrationService(
-    instructorService,
-    studentService,
-    courseService,
-    classroomService
-);
+    private StudentService studentService;
+    private CourseService courseService;
+    private InstructorService instructorService;
+    private ClassroomService classroomService;
+    private RegistrationService registrationService;
 
+    private JComboBox<Course> courseComboBox;
+    private JComboBox<Instructor> instructorComboBox;
+    private JComboBox<Classroom> classroomComboBox;
+    private JTextField capacityField;
 
-    private JTable table;
+    private JComboBox<Student> studentComboBox;
+    private JComboBox<ClassSession> sectionComboBox;
+
     private DefaultTableModel tableModel;
 
     public SchoolSystemUI() {
-        setTitle("School System");
-        setSize(1000, 600);
+
+        // WINDOW SETTINGS
+        setTitle("School Registration System");
+        setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Load all CSV data
-        loadData();
+        // LOAD SERVICES
+        studentService = new StudentService();
+        studentService.loadFromCSV("data/students.csv");
 
-        // Panel for buttons
-        JPanel buttonPanel = new JPanel();
-        JButton studentBtn = new JButton("Students");
-        JButton courseBtn = new JButton("Courses");
-        JButton instructorBtn = new JButton("Instructors");
-        JButton classroomBtn = new JButton("Classrooms");
-        JButton registerBtn = new JButton("Register Student");
+        courseService = new CourseService();
+        courseService.loadFromCSV("data/courses.csv");
 
-        buttonPanel.add(studentBtn);
-        buttonPanel.add(courseBtn);
-        buttonPanel.add(instructorBtn);
-        buttonPanel.add(classroomBtn);
-        buttonPanel.add(registerBtn);
+        classroomService = new ClassroomService();
+        classroomService.loadFromCSV("data/classrooms.csv");
 
-        // Table setup
-        tableModel = new DefaultTableModel();
-        table = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(table);
+        instructorService = new InstructorService();
+        instructorService.loadFromCSV("data/instructors.csv");
 
-        // Button actions
-        studentBtn.addActionListener(e -> displayStudents());
-        courseBtn.addActionListener(e -> displayCourses());
-        instructorBtn.addActionListener(e -> displayInstructors());
-        classroomBtn.addActionListener(e -> displayClassrooms());
-        registerBtn.addActionListener(e -> registerStudentToCourse());
+        registrationService = new RegistrationService(
+                instructorService,
+                studentService,
+                courseService,
+                classroomService
+        );
 
-        // Layout
-        setLayout(new BorderLayout());
-        add(buttonPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        // TABS
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.add("Dashboard", createDashboardPanel());
+        tabs.add("Administration", createAdminPanel());
+
+        add(tabs);
 
         setVisible(true);
     }
 
-    private void loadData() {
-        studentService.loadFromCSV("student.csv");
-        courseService.loadFromCSV("course.csv");
-        instructorService.loadFromCSV("instructor.csv");
-        classroomService.loadFromCSV("classroom.csv");
-        registrationService.loadFromCSV("registration.csv"); // optional, load existing registrations
+    private JPanel createDashboardPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        String[] columns = {"Course", "Section", "Instructor", "Room", "Enrolled"};
+        tableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(tableModel);
+        panel.add(new JScrollPane(table));
+        return panel;
     }
 
-    private void displayStudents() {
-        tableModel.setRowCount(0);
-        tableModel.setColumnCount(0);
-        tableModel.addColumn("ID");
-        tableModel.addColumn("Name");
-        tableModel.addColumn("Major");
-
-        Map<String, Student> students = studentService.getAllStudents();
-        for (Student s : students.values()) {
-            tableModel.addRow(new Object[]{s.getId(), s.getName(), s.getMajor()});
-        }
+    private JPanel createAdminPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 2));
+        panel.add(createSectionForm());
+        panel.add(createRegistrationForm());
+        return panel;
     }
 
-    private void displayCourses() {
-        tableModel.setRowCount(0);
-        tableModel.setColumnCount(0);
-        tableModel.addColumn("Course ID");
-        tableModel.addColumn("Name");
-        tableModel.addColumn("Credits");
+    private JPanel createSectionForm() {
+        JPanel panel = new JPanel(new GridLayout(6, 2));
 
-        Map<String, Course> courses = courseService.getAllCourses();
-        for (Course c : courses.values()) {
-            tableModel.addRow(new Object[]{c.getCourseId(), c.getName(), c.getCredits()});
-        }
+        courseComboBox = new JComboBox<>();
+        for (Course c : courseService.getAllCourses().values())
+            courseComboBox.addItem(c);
+
+        instructorComboBox = new JComboBox<>();
+
+        classroomComboBox = new JComboBox<>();
+        for (Classroom r : classroomService.getAllClassrooms().values())
+            classroomComboBox.addItem(r);
+
+        capacityField = new JTextField("30");
+
+        JButton btn = new JButton("Create Section");
+        btn.addActionListener(e -> createSection());
+
+        panel.setBorder(BorderFactory.createTitledBorder("Create Section"));
+
+        panel.add(new JLabel("Course:"));
+        panel.add(courseComboBox);
+        panel.add(new JLabel("Instructor:"));
+        panel.add(instructorComboBox);
+        panel.add(new JLabel("Room:"));
+        panel.add(classroomComboBox);
+        panel.add(new JLabel("Capacity:"));
+        panel.add(capacityField);
+        panel.add(new JLabel());
+        panel.add(btn);
+
+        courseComboBox.addActionListener(e -> updateInstructors());
+
+        return panel;
     }
 
-    private void displayInstructors() {
-        tableModel.setRowCount(0);
-        tableModel.setColumnCount(0);
-        tableModel.addColumn("ID");
-        tableModel.addColumn("Name");
-        tableModel.addColumn("Qualified Courses");
+    private JPanel createRegistrationForm() {
+        JPanel panel = new JPanel(new GridLayout(4, 2));
+        panel.setBorder(BorderFactory.createTitledBorder("Register Student"));
 
-        Map<String, Instructor> instructors = instructorService.getAllInstructors();
-        for (Instructor i : instructors.values()) {
-            tableModel.addRow(new Object[]{
-                i.getId(),
-                i.getName(),
-                String.join("|", i.getTeachingAssignment().stream().map(cs -> cs.getCourse().getCourseId()).toList())
-            });
-        }
+        studentComboBox = new JComboBox<>();
+        for (Student s : studentService.getAllStudents().values())
+            studentComboBox.addItem(s);
+
+        sectionComboBox = new JComboBox<>();
+        updateSections();
+
+        JButton btn = new JButton("Register");
+        btn.addActionListener(e -> registerStudent());
+
+        panel.add(new JLabel("Student:"));
+        panel.add(studentComboBox);
+        panel.add(new JLabel("Section:"));
+        panel.add(sectionComboBox);
+        panel.add(new JLabel());
+        panel.add(btn);
+
+        return panel;
     }
 
-    private void displayClassrooms() {
-        tableModel.setRowCount(0);
-        tableModel.setColumnCount(0);
-        tableModel.addColumn("Room Number");
-        tableModel.addColumn("Has Computer");
-        tableModel.addColumn("Has Smartboard");
+    private void updateInstructors() {
+        Course selected = (Course) courseComboBox.getSelectedItem();
+        instructorComboBox.removeAllItems();
 
-        Map<String, Classroom> classrooms = classroomService.getAllClassrooms();
-        for (Classroom r : classrooms.values()) {
-            tableModel.addRow(new Object[]{r.getRoomNumber(), r.hasComputer(), r.hasSmartboard()});
-        }
-    }
-
-    // === Register student to course ===
-    private void registerStudentToCourse() {
-        String studentId = JOptionPane.showInputDialog(this, "Enter Student ID:");
-        Student student = studentService.getStudentById(studentId);
-        if (student == null) {
-            JOptionPane.showMessageDialog(this, "Student not found!");
+        if (selected == null) {
+            // If no course is selected, show all instructors
+            for (Instructor i : instructorService.getAllInstructors().values()) {
+                instructorComboBox.addItem(i);
+            }
             return;
         }
 
-        String courseId = JOptionPane.showInputDialog(this, "Enter Course ID to register:");
-        Course course = courseService.getCourseById(courseId);
-        if (course == null) {
-            JOptionPane.showMessageDialog(this, "Course not found!");
+        List<Instructor> eligible = registrationService.findEligibleInstructors(selected);
+        for (Instructor i : eligible) {
+            instructorComboBox.addItem(i);
+        }
+    }
+
+    private void updateSections() {
+        sectionComboBox.removeAllItems();
+        for (ClassSession cs : registrationService.getActiveSections()) {
+            sectionComboBox.addItem(cs);
+        }
+    }
+
+    private void createSection() {
+        try {
+            Course c = (Course) courseComboBox.getSelectedItem();
+            Instructor i = (Instructor) instructorComboBox.getSelectedItem();
+            Classroom r = (Classroom) classroomComboBox.getSelectedItem();
+            int cap = Integer.parseInt(capacityField.getText());
+
+            registrationService.createClassSection(c, i, r, cap);
+
+            // Refresh section combo box
+            updateSections();
+
+            JOptionPane.showMessageDialog(this, "Section Created!");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+private void registerStudent() {
+    if (sectionComboBox.getItemCount() == 0) {
+        JOptionPane.showMessageDialog(this,
+            "You must create a section first!",
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    try {
+        Student s = (Student) studentComboBox.getSelectedItem();
+        ClassSession cs = (ClassSession) sectionComboBox.getSelectedItem();
+
+        if (s == null || cs == null) {
+            JOptionPane.showMessageDialog(this,
+                "Please select a student and a section to register",
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Create registration
-        ClassSession cs = new ClassSession(course);
-        registrationService.registerStudent(student, cs);
+        registrationService.registerStudent(s, cs);
+        JOptionPane.showMessageDialog(this, "Student Registered!");
 
-        // Save to CSV
-        saveRegistration(student, cs);
-
-        JOptionPane.showMessageDialog(this, "Student " + student.getName() + " registered to course " + course.getName() + "!");
-    }
-
-    private void saveRegistration(Student student, ClassSession cs) {
-        try (FileWriter fw = new FileWriter("registration.csv", true);
-             BufferedWriter bw = new BufferedWriter(fw);
-             PrintWriter out = new PrintWriter(bw)) {
-            // CSV format: studentId,courseId
-            out.println(student.getId() + "," + cs.getCourse().getCourseId());
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error saving registration: " + e.getMessage());
-        }
-    }
-
-    // Main method to launch GUI
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(SchoolSystemUI::new);
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this,
+            e.getMessage(),
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
     }
 }
