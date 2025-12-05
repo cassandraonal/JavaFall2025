@@ -3,6 +3,8 @@ package com.school.service;
 import com.school.model.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 public class RegistrationService {
 
@@ -90,5 +92,38 @@ public class RegistrationService {
     /** List of all open sections */
     public List<ClassSession> getActiveSections() {
         return activeSections;
+    }
+
+    // ---------------- CSV SAVE METHODS ----------------
+    public void saveSectionsToCSV(String filename) throws Exception {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
+            pw.println("SectionNumber,CourseID,CourseTitle,InstructorID,InstructorName,RoomID,RoomName,Capacity");
+            for (ClassSession cs : activeSections) {
+                pw.printf("%d,%s,%s,%s,%s,%s,%s,%d%n",
+                        cs.getSectionNumber(),
+                        cs.getCourse().getId(),
+                        cs.getCourse().getTitle(),
+                        cs.getInstructor().getId(),
+                        cs.getInstructor().getName(),
+                        cs.getClassroom().getId(),
+                        cs.getClassroom().getName(),
+                        cs.getCapacity());
+            }
+        }
+    }
+
+    public void saveRegistrationsToCSV(String filename) throws Exception {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
+            pw.println("SectionNumber,StudentID,StudentName,StudentMajor");
+            for (ClassSession cs : activeSections) {
+                for (Student s : cs.getEnrolledStudents()) {
+                    pw.printf("%d,%s,%s,%s%n",
+                            cs.getSectionNumber(),
+                            s.getId(),
+                            s.getName(),
+                            s.getMajor());
+                }
+            }
+        }
     }
 }
