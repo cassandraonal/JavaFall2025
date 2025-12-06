@@ -193,7 +193,7 @@ public class SchoolSystemUI extends JFrame {
                 cs.getCourse().getName(),
                 cs.getSectionNumber(),
                 cs.getInstructor().getName(),
-                cs.getRoom().getRoomNumber(),
+                cs.getClassroom().getRoomNumber(),
                 cs.getEnrolledStudents().size()
             });
         }
